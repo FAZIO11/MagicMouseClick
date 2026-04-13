@@ -10,9 +10,12 @@ final class GestureRecognizer {
     
     private var activeSessions: [Int: SessionData] = [:]
     private var sessionTimer: Timer?
-    private let tapTimeout: TimeInterval = 0.3
+    private let tapTimeout: TimeInterval = 0.18
     private var lastInjectedClickTime: TimeInterval = 0
     private let clickDebounceInterval: TimeInterval = 0.15
+    
+    private let movementThreshold: CGFloat = 0.04
+    private let maxConsecutiveMovingFrames = 3
     
     private var lastTouchCount = 0
     
@@ -33,10 +36,13 @@ final class GestureRecognizer {
         for touch in touches {
             if touch.state == MTTouchStateMakeTouch {
                 print("[GestureRecognizer] *** STATE=3 (MakeTouch) for finger \(touch.fingerID) ***")
+                startOrUpdateSession(touch)
             } else if touch.state == MTTouchStateTouching {
                 print("[GestureRecognizer] *** STATE=4 (Touching) for finger \(touch.fingerID) ***")
+                updateSessionWithMovement(touch)
             } else if touch.state == MTTouchStateBreakTouch {
                 print("[GestureRecognizer] *** STATE=5 (BreakTouch) for finger \(touch.fingerID) ***")
+                markSessionAsEnding(Int(touch.fingerID))
             }
             
             if touch.state == MTTouchStateMakeTouch || touch.state == MTTouchStateTouching {
@@ -54,12 +60,62 @@ final class GestureRecognizer {
                 fingerID: fingerID,
                 startTime: CACurrentMediaTime(),
                 startPosition: touch.position,
-                lastPosition: touch.position
+                lastPosition: touch.position,
+                maxDisplacement: 0,
+                consecutiveMovingFrames: 0,
+                isScroll: false
             )
             resetSessionTimer()
         } else {
             activeSessions[fingerID]?.lastPosition = touch.position
         }
+    }
+    
+    private func updateSessionWithMovement(_ touch: TouchData) {
+        let fingerID = Int(touch.fingerID)
+        guard var session = activeSessions[fingerID] else { return }
+        
+        let dx = touch.position.x - session.lastPosition.x
+        let dy = touch.position.y - session.lastPosition.y
+        let frameDisplacement = sqrt(dx * dx + dy * dy)
+        
+        let totalDx = touch.position.x - session.startPosition.x
+        let totalDy = touch.position.y - session.startPosition.y
+        let totalDisplacement = sqrt(totalDx * totalDx + totalDy * totalDy)
+        
+        session.maxDisplacement = max(session.maxDisplacement, totalDisplacement)
+        session.lastPosition = touch.position
+        
+        if frameDisplacement > movementThreshold {
+            session.consecutiveMovingFrames += 1
+            print("[GestureRecognizer] Frame displacement: \(frameDisplacement) - moving (frame \(session.consecutiveMovingFrames))")
+        } else {
+            session.consecutiveMovingFrames = 0
+        }
+        
+        if session.consecutiveMovingFrames > maxConsecutiveMovingFrames {
+            session.isScroll = true
+            print("[GestureRecognizer] SCROLL DETECTED - too many consecutive moving frames")
+        }
+        
+        activeSessions[fingerID] = session
+    }
+    
+    private func markSessionAsEnding(_ fingerID: Int) {
+        guard var session = activeSessions[fingerID] else { return }
+        
+        let dx = session.lastPosition.x - session.startPosition.x
+        let dy = session.lastPosition.y - session.startPosition.y
+        let totalDisplacement = sqrt(dx * dx + dy * dy)
+        
+        session.maxDisplacement = totalDisplacement
+        
+        if totalDisplacement > movementThreshold {
+            session.isScroll = true
+            print("[GestureRecognizer] SCROLL DETECTED - total displacement: \(totalDisplacement)")
+        }
+        
+        activeSessions[fingerID] = session
     }
     
     private func resetSessionTimer() {
@@ -81,22 +137,35 @@ final class GestureRecognizer {
         let fingerCount = activeSessions.count
         var avgPosition = CGPoint.zero
         
+        var isScroll = false
+        var maxDisplacement: CGFloat = 0
+        var maxConsecutiveMoving = 0
+        
         for (_, session) in activeSessions {
             avgPosition.x += session.startPosition.x
             avgPosition.y += session.startPosition.y
+            isScroll = isScroll || session.isScroll
+            maxDisplacement = max(maxDisplacement, session.maxDisplacement)
+            maxConsecutiveMoving = max(maxConsecutiveMoving, session.consecutiveMovingFrames)
         }
         avgPosition.x /= CGFloat(fingerCount)
         avgPosition.y /= CGFloat(fingerCount)
         
         let duration = CACurrentMediaTime() - (activeSessions.values.first?.startTime ?? 0)
         
-        print("[GestureRecognizer] Session complete: \(fingerCount) fingers, duration: \(duration)s")
+        print("[GestureRecognizer] Session complete: \(fingerCount) fingers, duration: \(duration)s, displacement: \(maxDisplacement)")
         
-        if duration < tapTimeout {
+        if isScroll {
+            print("[GestureRecognizer] SCROLL - no click fired")
+        } else if duration >= tapTimeout {
+            print("[GestureRecognizer] Too long - not a tap (duration: \(duration)s)")
+        } else if maxConsecutiveMoving > maxConsecutiveMovingFrames {
+            print("[GestureRecognizer] Scrolling motion - no click (consecutive moving frames: \(maxConsecutiveMoving))")
+        } else if maxDisplacement > movementThreshold {
+            print("[GestureRecognizer] Finger moved too much - not a tap (displacement: \(maxDisplacement))")
+        } else {
             print("[GestureRecognizer] TAP DETECTED! \(fingerCount) fingers")
             injectClick(fingerCount: fingerCount, at: avgPosition)
-        } else {
-            print("[GestureRecognizer] Too long - not a tap (duration: \(duration)s)")
         }
         
         activeSessions.removeAll()
@@ -136,4 +205,7 @@ private struct SessionData {
     let startTime: TimeInterval
     let startPosition: CGPoint
     var lastPosition: CGPoint
+    var maxDisplacement: CGFloat
+    var consecutiveMovingFrames: Int
+    var isScroll: Bool
 }
