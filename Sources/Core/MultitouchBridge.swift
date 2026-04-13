@@ -1,5 +1,7 @@
 import Foundation
 import AppKit
+import Darwin
+import CoreGraphics
 
 enum DeviceType: Int {
     case unknown = 0
@@ -42,25 +44,53 @@ protocol MultitouchBridgeDelegate: AnyObject {
     func multitouchBridgeDidDisconnect(_ bridge: MultitouchBridge)
 }
 
+private var sharedBridge: MultitouchBridge?
+
+private func touchCallback(
+    device: UnsafeMutableRawPointer?,
+    touches: UnsafeMutableRawPointer?,
+    numTouches: Int32,
+    timestamp: Double,
+    frame: Int32,
+    refcon: UnsafeMutableRawPointer?
+) -> Int32 {
+    guard let refcon = refcon else { return 0 }
+    let bridge = Unmanaged<MultitouchBridge>.fromOpaque(refcon).takeUnretainedValue()
+    
+    let touchPtr = touches?.assumingMemoryBound(to: MTTouch.self)
+    
+    bridge.handleTouchFrame(
+        device: device,
+        touches: touchPtr,
+        numTouches: Int(numTouches),
+        timestamp: timestamp,
+        frame: frame
+    )
+    return 0
+}
+
 final class MultitouchBridge {
     static let shared = MultitouchBridge()
     
     weak var delegate: MultitouchBridgeDelegate?
     
     private var frameworkHandle: UnsafeMutableRawPointer?
-    private var devices: [MTDeviceRef] = []
+    private var devices: [UnsafeMutableRawPointer] = []
     private var isRunning = false
     private var isConnected = false
     
     private let gestureRecognizer = GestureRecognizer()
-    private var notificationPort: IONotificationPortRef?
-    private var addedIterator: io_iterator_t = 0
-    private var removedIterator: io_iterator_t = 0
     
     private let magicMouseFamilyID = 112
-    private let palmRejection = PalmRejection()
+    
+    private var registerCallbackPtr: UnsafeMutableRawPointer?
+    private var createListPtr: UnsafeMutableRawPointer?
+    private var getFamilyIDPtr: UnsafeMutableRawPointer?
+    private var deviceStartPtr: UnsafeMutableRawPointer?
+    private var deviceStopPtr: UnsafeMutableRawPointer?
     
     private init() {
+        sharedBridge = self
         gestureRecognizer.delegate = self
     }
     
@@ -77,15 +107,13 @@ final class MultitouchBridge {
             return
         }
         
+        loadFunctionPointers()
         enumerateAndRegisterDevices()
-        setupDeviceNotifications()
         isRunning = true
     }
     
     func stop() {
         guard isRunning else { return }
-        
-        teardownDeviceNotifications()
         
         for device in devices {
             stopDevice(device)
@@ -101,8 +129,21 @@ final class MultitouchBridge {
         isConnected = false
     }
     
+    private func loadFunctionPointers() {
+        createListPtr = dlsym(frameworkHandle, "MTDeviceCreateList")
+        getFamilyIDPtr = dlsym(frameworkHandle, "MTDeviceGetFamilyID")
+        registerCallbackPtr = dlsym(frameworkHandle, "MTRegisterContactFrameCallbackWithRefcon")
+        deviceStartPtr = dlsym(frameworkHandle, "MTDeviceStart")
+        deviceStopPtr = dlsym(frameworkHandle, "MTDeviceStop")
+    }
+    
     private func enumerateAndRegisterDevices() {
-        guard let deviceList = MTDeviceCreateList() else { return }
+        guard let ptr = createListPtr else { return }
+        
+        typealias CreateListFunc = @convention(c) () -> CFArray?
+        let createList = unsafeBitCast(ptr, to: CreateListFunc.self)
+        
+        guard let deviceList = createList() else { return }
         
         let count = CFArrayGetCount(deviceList)
         var foundMagicMouse = false
@@ -112,7 +153,7 @@ final class MultitouchBridge {
             let deviceRef = UnsafeMutableRawPointer(mutating: device)
             
             var familyID: Int32 = 0
-            MTDeviceGetFamilyID(deviceRef, &familyID)
+            getFamilyID(device: deviceRef, familyID: &familyID)
             
             if familyID == magicMouseFamilyID {
                 registerCallback(for: deviceRef)
@@ -128,185 +169,112 @@ final class MultitouchBridge {
         }
     }
     
-    private func registerCallback(for device: MTDeviceRef) {
-        let callback: MTFrameCallbackFunction = { device, touches, numTouches, timestamp, frame in
-            self.handleTouchFrame(
-                device: device,
-                touches: touches,
-                numTouches: Int(numTouches),
-                timestamp: timestamp,
-                frame: frame
-            )
-            return 0
-        }
+    private func getFamilyID(device: UnsafeMutableRawPointer, familyID: inout Int32) {
+        guard let ptr = getFamilyIDPtr else { return }
         
-        MTRegisterContactFrameCallback(device, callback)
+        typealias GetFamilyIDFunc = @convention(c) (UnsafeMutableRawPointer, UnsafeMutablePointer<Int32>) -> Int32
+        let funcPtr = unsafeBitCast(ptr, to: GetFamilyIDFunc.self)
+        _ = funcPtr(device, &familyID)
     }
     
-    private func startDevice(_ device: MTDeviceRef) {
-        MTDeviceStart(device, 0)
+    private func registerCallback(for device: UnsafeMutableRawPointer) {
+        guard let ptr = registerCallbackPtr else { return }
+        
+        let selfPtr = Unmanaged.passUnretained(self).toOpaque()
+        
+        typealias RegisterFunc = @convention(c) (
+            UnsafeMutableRawPointer,
+            @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, Int32, Double, Int32, UnsafeMutableRawPointer?) -> Int32,
+            UnsafeMutableRawPointer
+        ) -> Void
+        
+        let funcPtr = unsafeBitCast(ptr, to: RegisterFunc.self)
+        funcPtr(device, touchCallback, selfPtr)
     }
     
-    private func stopDevice(_ device: MTDeviceRef) {
-        MTDeviceStop(device)
+    private func startDevice(_ device: UnsafeMutableRawPointer) {
+        guard let ptr = deviceStartPtr else { return }
+        
+        typealias StartFunc = @convention(c) (UnsafeMutableRawPointer, Int32) -> Int32
+        let funcPtr = unsafeBitCast(ptr, to: StartFunc.self)
+        _ = funcPtr(device, 0)
     }
     
-    private func handleTouchFrame(
-        device: MTDeviceRef?,
+    private func stopDevice(_ device: UnsafeMutableRawPointer) {
+        guard let ptr = deviceStopPtr else { return }
+        
+        typealias StopFunc = @convention(c) (UnsafeMutableRawPointer) -> Int32
+        let funcPtr = unsafeBitCast(ptr, to: StopFunc.self)
+        _ = funcPtr(device)
+    }
+    
+    func handleTouchFrame(
+        device: UnsafeMutableRawPointer?,
         touches: UnsafePointer<MTTouch>?,
         numTouches: Int,
         timestamp: Double,
         frame: Int32
     ) {
         guard let touches = touches, numTouches > 0 else {
-            let emptyTouch = TouchData(
-                position: .zero,
-                fingerID: -1,
-                fingerCount: 0,
-                state: MTTouchStateNotTracking,
-                timestamp: timestamp,
-                size: 0
-            )
-            delegate?.multitouchBridge(self, didReceiveTouches: [emptyTouch])
+            DispatchQueue.main.async {
+                let emptyTouch = TouchData(
+                    position: .zero,
+                    fingerID: -1,
+                    fingerCount: 0,
+                    state: MTTouchStateNotTracking,
+                    timestamp: timestamp,
+                    size: 0
+                )
+                self.delegate?.multitouchBridge(self, didReceiveTouches: [emptyTouch])
+            }
             return
         }
         
-        var touchDataArray: [TouchData] = []
         var activeTouches: [TouchData] = []
         
         for i in 0..<numTouches {
             let touch = touches[i]
             
+            if touch.state != MTTouchStateMakeTouch && touch.state != MTTouchStateTouching {
+                continue
+            }
+            
+            if !shouldAcceptTouch(position: touch.normalizedVector, size: touch.zTotal) {
+                continue
+            }
+            
             let posX = CGFloat(touch.normalizedVector.position.x)
             let posY = CGFloat(touch.normalizedVector.position.y)
-            let position = CGPoint(x: posX, y: posY)
             
             let data = TouchData(
-                position: position,
+                position: CGPoint(x: posX, y: posY),
                 fingerID: touch.fingerID,
                 fingerCount: numTouches,
                 state: touch.state,
                 timestamp: timestamp,
                 size: touch.zTotal
             )
-            
-            if palmRejection.shouldAccept(data: data) {
-                touchDataArray.append(data)
-                
-                if touch.state == MTTouchStateMakeTouch || touch.state == MTTouchStateTouching {
-                    activeTouches.append(data)
-                }
-            }
+            activeTouches.append(data)
         }
         
         if !activeTouches.isEmpty {
-            delegate?.multitouchBridge(self, didReceiveTouches: activeTouches)
-            gestureRecognizer.processTouches(activeTouches)
-        }
-        
-        for touch in touchDataArray {
-            if touch.state == MTTouchStateMakeTouch {
-                delegate?.multitouchBridge(self, didDetectGesture: .touchStart, fingerCount: numTouches)
-            } else if touch.state == MTTouchStateBreakTouch {
-                delegate?.multitouchBridge(self, didDetectGesture: .touchEnd, fingerCount: numTouches)
+            DispatchQueue.main.async {
+                self.delegate?.multitouchBridge(self, didReceiveTouches: activeTouches)
+                self.gestureRecognizer.processTouches(activeTouches)
             }
         }
     }
     
-    private func setupDeviceNotifications() {
-        let matchingDict = IOServiceMatching("AppleMultitouchMouseDriver")
-        
-        notificationPort = IONotificationPortCreate(kIOMainPortDefault)
-        
-        guard let notificationPort = notificationPort else { return }
-        
-        let runLoopSource = IONotificationPortGetRunLoopSource(notificationPort).takeUnretainedValue()
-        CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .defaultMode)
-        
-        let selfPointer = Unmanaged.passUnretained(self).toOpaque()
-        
-        let addCallback: IOServiceMatchingCallback = { refcon, iterator in
-            guard let refcon = refcon else { return }
-            let bridge = Unmanaged<MultitouchBridge>.fromOpaque(refcon).takeUnretainedValue()
-            bridge.handleDeviceAdded(iterator: iterator)
+    private func shouldAcceptTouch(position: MTVector, size: Float) -> Bool {
+        if position.position.y < 0.25 {
+            return false
         }
         
-        let removeCallback: IOServiceMatchingCallback = { refcon, iterator in
-            guard let refcon = refcon else { return }
-            let bridge = Unmanaged<MultitouchBridge>.fromOpaque(refcon).takeUnretainedValue()
-            bridge.handleDeviceRemoved(iterator: iterator)
+        if size > 5.5 {
+            return false
         }
         
-        IOServiceAddMatchingNotification(
-            notificationPort,
-            kIOFirstMatchNotification,
-            matchingDict,
-            addCallback,
-            selfPointer,
-            &addedIterator
-        )
-        
-        IOServiceAddMatchingNotification(
-            notificationPort,
-            kIOTerminatedNotification,
-            matchingDict,
-            removeCallback,
-            selfPointer,
-            &removedIterator
-        )
-        
-        handleDeviceAdded(iterator: addedIterator)
-        handleDeviceRemoved(iterator: removedIterator)
-    }
-    
-    private func teardownDeviceNotifications() {
-        if addedIterator != 0 {
-            IOObjectRelease(addedIterator)
-            addedIterator = 0
-        }
-        if removedIterator != 0 {
-            IOObjectRelease(removedIterator)
-            removedIterator = 0
-        }
-        if let port = notificationPort {
-            IONotificationPortDestroy(port)
-            notificationPort = nil
-        }
-    }
-    
-    private func handleDeviceAdded(iterator: io_iterator_t) {
-        var service: io_object_t = 0
-        repeat {
-            service = IOIteratorNext(iterator)
-            if service != 0 {
-                IOObjectRelease(service)
-            }
-        } while service != 0
-        
-        DispatchQueue.main.async {
-            if !self.isConnected {
-                self.enumerateAndRegisterDevices()
-            }
-        }
-    }
-    
-    private func handleDeviceRemoved(iterator: io_iterator_t) {
-        var service: io_object_t = 0
-        repeat {
-            service = IOIteratorNext(iterator)
-            if service != 0 {
-                IOObjectRelease(service)
-            }
-        } while service != 0
-        
-        DispatchQueue.main.async {
-            let hadConnection = self.isConnected
-            self.enumerateAndRegisterDevices()
-            
-            if hadConnection && !self.isConnected {
-                self.delegate?.multitouchBridgeDidDisconnect(self)
-            }
-        }
+        return true
     }
 }
 
@@ -317,21 +285,40 @@ extension MultitouchBridge: GestureRecognizerDelegate {
     }
 }
 
-private class PalmRejection {
-    private let topEdgeThreshold: CGFloat = 0.25
-    private let maxTouchSize: Float = 5.5
-    
-    func shouldAccept(data: TouchData) -> Bool {
-        let pos = data.position
-        
-        if pos.y < topEdgeThreshold {
-            return false
-        }
-        
-        if data.size > maxTouchSize {
-            return false
-        }
-        
-        return true
-    }
+struct MTPoint {
+    var x: Float
+    var y: Float
 }
+
+struct MTVector {
+    var position: MTPoint
+    var velocity: MTPoint
+}
+
+struct MTTouch {
+    var frame: Int32
+    var timestamp: Double
+    var pathIndex: Int32
+    var state: UInt32
+    var fingerID: Int32
+    var handID: Int32
+    var normalizedVector: MTVector
+    var zTotal: Float
+    var field9: Int32
+    var angle: Float
+    var majorAxis: Float
+    var minorAxis: Float
+    var absoluteVector: MTVector
+    var field14: Int32
+    var field15: Int32
+    var zDensity: Float
+}
+
+let MTTouchStateNotTracking: UInt32 = 0
+let MTTouchStateStartInRange: UInt32 = 1
+let MTTouchStateHoverInRange: UInt32 = 2
+let MTTouchStateMakeTouch: UInt32 = 3
+let MTTouchStateTouching: UInt32 = 4
+let MTTouchStateBreakTouch: UInt32 = 5
+let MTTouchStateLingerInRange: UInt32 = 6
+let MTTouchStateOutOfRange: UInt32 = 7

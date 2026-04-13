@@ -128,7 +128,7 @@ struct MagicMouseSilhouette: Shape {
     }
 }
 
-struct GestureEventLog: Identifiable {
+struct GestureEventLog: Identifiable, Equatable {
     let id = UUID()
     let event: GestureEvent
     let fingerCount: Int
@@ -140,6 +140,10 @@ struct GestureEventLog: Identifiable {
     
     var fingerLabel: String {
         "\(fingerCount)f"
+    }
+    
+    static func == (lhs: GestureEventLog, rhs: GestureEventLog) -> Bool {
+        lhs.id == rhs.id
     }
 }
 

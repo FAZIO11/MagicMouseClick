@@ -37,7 +37,7 @@ struct SettingsView: View {
                     .padding(.bottom, 10)
                 
                 Toggle("Enable Tap-to-Click", isOn: $gesturesEnabled)
-                    .onChange(of: gesturesEnabled) { _, newValue in
+                    .onChange(of: gesturesEnabled) { newValue in
                         SettingsManager.shared.gesturesEnabled = newValue
                     }
                 
@@ -53,7 +53,7 @@ struct SettingsView: View {
                     HStack {
                         Slider(value: $tapDuration, in: 0.1...0.35, step: 0.01)
                             .frame(width: 200)
-                            .onChange(of: tapDuration) { _, newValue in
+                            .onChange(of: tapDuration) { newValue in
                                 SettingsManager.shared.tapDuration = newValue
                             }
                         Text("\(Int(tapDuration * 1000))ms")
@@ -72,7 +72,7 @@ struct SettingsView: View {
                     HStack {
                         Slider(value: $movementThreshold, in: 0.01...0.1, step: 0.005)
                             .frame(width: 200)
-                            .onChange(of: movementThreshold) { _, newValue in
+                            .onChange(of: movementThreshold) { newValue in
                                 SettingsManager.shared.movementThreshold = newValue
                             }
                         Text(String(format: "%.2f", movementThreshold))
@@ -84,7 +84,7 @@ struct SettingsView: View {
                 Divider()
                 
                 Toggle("Launch at Login", isOn: $launchAtLogin)
-                    .onChange(of: launchAtLogin) { _, newValue in
+                    .onChange(of: launchAtLogin) { newValue in
                         SettingsManager.shared.launchAtLogin = newValue
                     }
                 

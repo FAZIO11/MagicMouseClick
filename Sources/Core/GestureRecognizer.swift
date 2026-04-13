@@ -9,7 +9,6 @@ final class GestureRecognizer {
     weak var delegate: GestureRecognizerDelegate?
     
     private var sessions: [Int: GestureSession] = [:]
-    private let palmRejection = PalmRejection()
     
     private var lastInjectedClickTime: TimeInterval = 0
     private let clickDebounceInterval: TimeInterval = 0.15
@@ -30,7 +29,6 @@ final class GestureRecognizer {
     }
     
     private func startSession(for touch: TouchData) {
-        guard palmRejection.shouldAccept(touch: touch) else { return }
         
         let session = GestureSession(
             fingerID: Int(touch.fingerID),
@@ -89,7 +87,7 @@ final class GestureRecognizer {
         
         for session in sessions {
             let movement = session.totalMovement
-            if movement > SettingsManager.shared.movementThreshold {
+            if movement > CGFloat(SettingsManager.shared.movementThreshold) {
                 return false
             }
         }
@@ -153,23 +151,4 @@ struct GestureSession {
     }
 }
 
-final class PalmRejection {
-    private let topEdgeThreshold: CGFloat = 0.3
-    private let bottomEdgeThreshold: CGFloat = 0.95
-    private let sideEdgeThreshold: CGFloat = 0.02
-    private let maxTouchSize: Float = 5.5
-    
-    func shouldAccept(touch: TouchData) -> Bool {
-        let pos = touch.position
-        
-        if pos.y > topEdgeThreshold && pos.y < bottomEdgeThreshold {
-            return true
-        }
-        
-        if pos.x < sideEdgeThreshold || pos.x > (1.0 - sideEdgeThreshold) {
-            return false
-        }
-        
-        return true
-    }
-}
+

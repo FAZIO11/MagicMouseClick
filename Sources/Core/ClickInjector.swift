@@ -43,9 +43,6 @@ final class ClickInjector {
             mouseButton: button
         )
         
-        mouseDown?.flags = .mouseEventFlagsMask
-        mouseUp?.flags = .mouseEventFlagsMask
-        
         mouseDown?.post(tap: .cghidEventTap)
         mouseUp?.post(tap: .cghidEventTap)
     }
