@@ -14,9 +14,8 @@ final class GestureRecognizer {
     private var lastInjectedClickTime: TimeInterval = 0
     private let clickDebounceInterval: TimeInterval = 0.15
     
-    private let movementThreshold: CGFloat = 0.03
-    private let maxConsecutiveMovingFrames = 3
-    private let maxTotalPathDistance: CGFloat = 0.05
+    private let scrollDisplacementThreshold: CGFloat = 0.08
+    private let scrollConsecutiveFrames = 5
     
     private var lastTouchCount = 0
     
@@ -43,7 +42,7 @@ final class GestureRecognizer {
                 updateSessionWithMovement(touch)
             } else if touch.state == MTTouchStateBreakTouch {
                 print("[GestureRecognizer] *** STATE=5 (BreakTouch) for finger \(touch.fingerID) ***")
-                markSessionAsEnding(Int(touch.fingerID))
+                finalizeSession(Int(touch.fingerID))
             }
             
             if touch.state == MTTouchStateMakeTouch || touch.state == MTTouchStateTouching {
@@ -63,9 +62,8 @@ final class GestureRecognizer {
                 startPosition: touch.position,
                 lastPosition: touch.position,
                 maxDisplacement: 0,
-                totalPathDistance: 0,
                 consecutiveMovingFrames: 0,
-                isScroll: true
+                isScroll: false
             )
             resetSessionTimer()
         } else {
@@ -85,31 +83,29 @@ final class GestureRecognizer {
         let totalDy = touch.position.y - session.startPosition.y
         let totalDisplacement = sqrt(totalDx * totalDx + totalDy * totalDy)
         
-        session.totalPathDistance += frameDisplacement
         session.maxDisplacement = max(session.maxDisplacement, totalDisplacement)
         session.lastPosition = touch.position
         
-        if frameDisplacement > movementThreshold {
+        if frameDisplacement > 0.01 {
             session.consecutiveMovingFrames += 1
-            print("[GestureRecognizer] Frame displacement: \(frameDisplacement) - moving (frame \(session.consecutiveMovingFrames))")
         } else {
             session.consecutiveMovingFrames = 0
         }
         
-        if session.consecutiveMovingFrames > maxConsecutiveMovingFrames {
+        if session.consecutiveMovingFrames >= scrollConsecutiveFrames {
             session.isScroll = true
-            print("[GestureRecognizer] SCROLL - too many consecutive moving frames")
+            print("[GestureRecognizer] SCROLL - \(session.consecutiveMovingFrames) consecutive moving frames")
         }
         
-        if session.totalPathDistance > maxTotalPathDistance {
+        if session.maxDisplacement > scrollDisplacementThreshold {
             session.isScroll = true
-            print("[GestureRecognizer] SCROLL - total path exceeded \(session.totalPathDistance)")
+            print("[GestureRecognizer] SCROLL - displacement: \(session.maxDisplacement)")
         }
         
         activeSessions[fingerID] = session
     }
     
-    private func markSessionAsEnding(_ fingerID: Int) {
+    private func finalizeSession(_ fingerID: Int) {
         guard var session = activeSessions[fingerID] else { return }
         
         let dx = session.lastPosition.x - session.startPosition.x
@@ -118,9 +114,9 @@ final class GestureRecognizer {
         
         session.maxDisplacement = max(session.maxDisplacement, finalDisplacement)
         
-        if session.maxDisplacement > movementThreshold || session.totalPathDistance > maxTotalPathDistance {
+        if finalDisplacement > scrollDisplacementThreshold {
             session.isScroll = true
-            print("[GestureRecognizer] SCROLL - final displacement: \(session.maxDisplacement), path: \(session.totalPathDistance)")
+            print("[GestureRecognizer] SCROLL - final displacement: \(finalDisplacement)")
         }
         
         activeSessions[fingerID] = session
@@ -147,7 +143,6 @@ final class GestureRecognizer {
         
         var isScroll = false
         var maxDisplacement: CGFloat = 0
-        var totalPathDistance: CGFloat = 0
         var maxConsecutiveMoving = 0
         
         for (_, session) in activeSessions {
@@ -155,7 +150,6 @@ final class GestureRecognizer {
             avgPosition.y += session.startPosition.y
             isScroll = isScroll || session.isScroll
             maxDisplacement = max(maxDisplacement, session.maxDisplacement)
-            totalPathDistance = max(totalPathDistance, session.totalPathDistance)
             maxConsecutiveMoving = max(maxConsecutiveMoving, session.consecutiveMovingFrames)
         }
         avgPosition.x /= CGFloat(fingerCount)
@@ -163,7 +157,7 @@ final class GestureRecognizer {
         
         let duration = CACurrentMediaTime() - (activeSessions.values.first?.startTime ?? 0)
         
-        print("[GestureRecognizer] Session complete: \(fingerCount) fingers, duration: \(duration)s, displacement: \(maxDisplacement), path: \(totalPathDistance), isScroll: \(isScroll)")
+        print("[GestureRecognizer] Session complete: \(fingerCount) fingers, duration: \(duration)s, displacement: \(maxDisplacement), isScroll: \(isScroll)")
         
         if isScroll {
             print("[GestureRecognizer] SCROLL - no click fired")
@@ -212,7 +206,6 @@ private struct SessionData {
     let startPosition: CGPoint
     var lastPosition: CGPoint
     var maxDisplacement: CGFloat
-    var totalPathDistance: CGFloat
     var consecutiveMovingFrames: Int
     var isScroll: Bool
 }
