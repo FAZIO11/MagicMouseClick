@@ -14,50 +14,88 @@ A lightweight macOS utility that enables gesture-based interactions on the Magic
 
 - macOS 13.0 (Ventura) or later
 - Magic Mouse or Magic Mouse 2
+- Xcode 15+
 - Accessibility permission (guided setup)
 
 ## Building
 
 ### Prerequisites
 
-- Xcode 15+
-- XcodeGen (`brew install xcodegen`)
+1. Install XcodeGen:
+   ```bash
+   brew install xcodegen
+   ```
+
+2. Select Xcode as the active developer directory:
+   ```bash
+   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+   ```
 
 ### Build Steps
 
 ```bash
-# Clone the repository
-git clone https://github.com/fazilsathar/MagicMouseClick.git
+# Navigate to project directory
 cd MagicMouseClick
 
 # Generate Xcode project
 xcodegen generate
 
-# Open in Xcode
+# Open in Xcode (recommended)
 open MagicMouseClick.xcodeproj
 
 # Or build from command line
 xcodebuild -scheme MagicMouseClick -configuration Release build
 ```
 
-## Installation
+The built app will be in:
+```
+DerivedData/MagicMouseClick/Build/Products/Release/MagicMouseClick.app
+```
 
-1. Build the app (see above)
-2. Copy `MagicMouseClick.app` to `/Applications`
-3. Launch the app
-4. Follow the setup wizard to grant Accessibility permission
+### First Run Setup
 
-## Usage
+1. Copy the app to Applications:
+   ```bash
+   cp -R DerivedData/MagicMouseClick/Build/Products/Release/MagicMouseClick.app /Applications/
+   ```
 
-1. The app runs in the menu bar (no dock icon)
-2. Click the menu bar icon to access settings
-3. Enable/disable gestures with the toggle switch
-4. Use the visualizer to confirm touch registration
+2. Launch the app from Applications
+
+3. Follow the setup wizard to grant Accessibility permission
+
+4. In System Settings → Privacy & Security → Accessibility, enable MagicMouseClick
 
 ## Configuration
 
-- **Tap Duration**: How long a touch must last to register as a tap (100-350ms)
-- **Movement Threshold**: Maximum finger movement allowed during a tap (0.01-0.10)
+- **Tap Duration**: How long a touch must last to register as a tap (100-350ms, default: 180ms)
+- **Movement Threshold**: Maximum finger movement allowed during a tap (0.01-0.10, default: 0.03)
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Menu Bar UI                          │
+│  (StatusItem, Settings Window, Live Visualizer)        │
+├─────────────────────────────────────────────────────────┤
+│               MultitouchBridge                          │
+│  - Dynamic loads MultitouchSupport.framework            │
+│  - Registers callbacks for Magic Mouse events           │
+│  - Handles device connect/disconnect                     │
+├─────────────────────────────────────────────────────────┤
+│               GestureRecognizer                        │
+│  - Tap detection with duration/movement validation      │
+│  - Palm rejection (filters edge touches, large touches)│
+│  - Multi-finger session tracking                        │
+├─────────────────────────────────────────────────────────┤
+│               ClickInjector                            │
+│  - CGEvent-based click injection                        │
+│  - Debouncing to prevent double-clicks                  │
+├─────────────────────────────────────────────────────────┤
+│               System Integration                       │
+│  - SMAppService for launch at login                     │
+│  - AXIsProcessTrusted for accessibility permission     │
+└─────────────────────────────────────────────────────────┘
+```
 
 ## License
 

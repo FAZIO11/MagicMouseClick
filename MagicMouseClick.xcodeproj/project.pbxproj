@@ -1,0 +1,383 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		08E2B94E9E2673C5179CE9BB /* GestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114AAF35427610FB93A740DC /* GestureRecognizer.swift */; };
+		0A65545AC219895F3C280260 /* TouchVisualizerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA0F152E941BF26DD11B6D26 /* TouchVisualizerView.swift */; };
+		2A4A6E7CE1D254037270CB8B /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFA5AACEB9279E621BD3852 /* main.swift */; };
+		367FE28955CB425C66868EF0 /* SetupWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A51BAC718C51815820BC26A /* SetupWindow.swift */; };
+		6132CB0684CC80C271F00D43 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 244243B124E15A6B5AE308BE /* MenuBarController.swift */; };
+		719EFBDE8211FA6BC6A971F5 /* AutoLaunchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1973712F081AA4B1037855B0 /* AutoLaunchManager.swift */; };
+		95A25A626E12DE391E4DB46C /* ClickInjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 543C90D158267D2B55369D5A /* ClickInjector.swift */; };
+		969D4B32094A9BD070D167D8 /* MultitouchSupport.h in Sources */ = {isa = PBXBuildFile; fileRef = 259883DA85003538D25C9C31 /* MultitouchSupport.h */; };
+		9CE6B7949245EE7A4E49D2BE /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 185906AD7B0D02FEE8E3CDD9 /* SettingsManager.swift */; };
+		AF6B9565D00CD1DC10D93E49 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA8A3708EACAE26655412C5 /* AppDelegate.swift */; };
+		C56EA9879777304EA680AE1C /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E96179EEB4B9003487459C5 /* SettingsWindow.swift */; };
+		C85AF22DABC86132E6D8CC7D /* PermissionChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99C51A406488BE909AAEF52C /* PermissionChecker.swift */; };
+		FB7E2A46FDC2D97D43F6739B /* MultitouchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA919194F97271D328302E34 /* MultitouchBridge.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		114AAF35427610FB93A740DC /* GestureRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GestureRecognizer.swift; sourceTree = "<group>"; };
+		185906AD7B0D02FEE8E3CDD9 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
+		1973712F081AA4B1037855B0 /* AutoLaunchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoLaunchManager.swift; sourceTree = "<group>"; };
+		1E96179EEB4B9003487459C5 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
+		244243B124E15A6B5AE308BE /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		259883DA85003538D25C9C31 /* MultitouchSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MultitouchSupport.h; sourceTree = "<group>"; };
+		543C90D158267D2B55369D5A /* ClickInjector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickInjector.swift; sourceTree = "<group>"; };
+		6A51BAC718C51815820BC26A /* SetupWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupWindow.swift; sourceTree = "<group>"; };
+		96FF1176E8B3D9FA223FCFB7 /* MagicMouseClick.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MagicMouseClick.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		99C51A406488BE909AAEF52C /* PermissionChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionChecker.swift; sourceTree = "<group>"; };
+		ABA8A3708EACAE26655412C5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		DA0F152E941BF26DD11B6D26 /* TouchVisualizerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchVisualizerView.swift; sourceTree = "<group>"; };
+		DA919194F97271D328302E34 /* MultitouchBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultitouchBridge.swift; sourceTree = "<group>"; };
+		FFFA5AACEB9279E621BD3852 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		095A7D6BC9B9F32A84AB3C73 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				7851FB6E504BCF69AB4C7987 /* App */,
+				46280261BCA3468A86E1CB64 /* Core */,
+				165523117E2D796D36F80B55 /* UI */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		165523117E2D796D36F80B55 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				244243B124E15A6B5AE308BE /* MenuBarController.swift */,
+				1E96179EEB4B9003487459C5 /* SettingsWindow.swift */,
+				6A51BAC718C51815820BC26A /* SetupWindow.swift */,
+				DA0F152E941BF26DD11B6D26 /* TouchVisualizerView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		46280261BCA3468A86E1CB64 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				1973712F081AA4B1037855B0 /* AutoLaunchManager.swift */,
+				543C90D158267D2B55369D5A /* ClickInjector.swift */,
+				114AAF35427610FB93A740DC /* GestureRecognizer.swift */,
+				DA919194F97271D328302E34 /* MultitouchBridge.swift */,
+				99C51A406488BE909AAEF52C /* PermissionChecker.swift */,
+				185906AD7B0D02FEE8E3CDD9 /* SettingsManager.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		6DF061D7746F21789A181CFE = {
+			isa = PBXGroup;
+			children = (
+				259883DA85003538D25C9C31 /* MultitouchSupport.h */,
+				095A7D6BC9B9F32A84AB3C73 /* Sources */,
+				98DF6AD0F5DC460AC0B57C79 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7851FB6E504BCF69AB4C7987 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				ABA8A3708EACAE26655412C5 /* AppDelegate.swift */,
+				FFFA5AACEB9279E621BD3852 /* main.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		98DF6AD0F5DC460AC0B57C79 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				96FF1176E8B3D9FA223FCFB7 /* MagicMouseClick.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BD8CD18367D2EFEDE2932C76 /* MagicMouseClick */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 581D1B04364B4E4C1DDD2979 /* Build configuration list for PBXNativeTarget "MagicMouseClick" */;
+			buildPhases = (
+				98A5E8CEE3E08231D2B51F9A /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MagicMouseClick;
+			packageProductDependencies = (
+			);
+			productName = MagicMouseClick;
+			productReference = 96FF1176E8B3D9FA223FCFB7 /* MagicMouseClick.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		846DE3C6A4CAA8A7809DDD5A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					BD8CD18367D2EFEDE2932C76 = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 5253DFCE53FCCA7126BFC8EC /* Build configuration list for PBXProject "MagicMouseClick" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 6DF061D7746F21789A181CFE;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 98DF6AD0F5DC460AC0B57C79 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BD8CD18367D2EFEDE2932C76 /* MagicMouseClick */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		98A5E8CEE3E08231D2B51F9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF6B9565D00CD1DC10D93E49 /* AppDelegate.swift in Sources */,
+				719EFBDE8211FA6BC6A971F5 /* AutoLaunchManager.swift in Sources */,
+				95A25A626E12DE391E4DB46C /* ClickInjector.swift in Sources */,
+				08E2B94E9E2673C5179CE9BB /* GestureRecognizer.swift in Sources */,
+				6132CB0684CC80C271F00D43 /* MenuBarController.swift in Sources */,
+				FB7E2A46FDC2D97D43F6739B /* MultitouchBridge.swift in Sources */,
+				969D4B32094A9BD070D167D8 /* MultitouchSupport.h in Sources */,
+				C85AF22DABC86132E6D8CC7D /* PermissionChecker.swift in Sources */,
+				9CE6B7949245EE7A4E49D2BE /* SettingsManager.swift in Sources */,
+				C56EA9879777304EA680AE1C /* SettingsWindow.swift in Sources */,
+				367FE28955CB425C66868EF0 /* SetupWindow.swift in Sources */,
+				0A65545AC219895F3C280260 /* TouchVisualizerView.swift in Sources */,
+				2A4A6E7CE1D254037270CB8B /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		07133E00A9C7E14BA6C602A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MagicMouseClick.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					IOKit,
+					"-framework",
+					CoreGraphics,
+					"-framework",
+					ApplicationServices,
+					"-ld_classic",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fazil.MagicMouseClick;
+				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/MultitouchSupport.h";
+			};
+			name = Release;
+		};
+		6FB8E16369A5FEC3DE57E045 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MagicMouseClick.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					IOKit,
+					"-framework",
+					CoreGraphics,
+					"-framework",
+					ApplicationServices,
+					"-ld_classic",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fazil.MagicMouseClick;
+				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/MultitouchSupport.h";
+			};
+			name = Debug;
+		};
+		A4146E7F9CF4CFB016C08C22 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = MagicMouseClick;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		BF5997E8F7E34960861D027C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = MagicMouseClick;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5253DFCE53FCCA7126BFC8EC /* Build configuration list for PBXProject "MagicMouseClick" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A4146E7F9CF4CFB016C08C22 /* Debug */,
+				BF5997E8F7E34960861D027C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		581D1B04364B4E4C1DDD2979 /* Build configuration list for PBXNativeTarget "MagicMouseClick" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6FB8E16369A5FEC3DE57E045 /* Debug */,
+				07133E00A9C7E14BA6C602A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 846DE3C6A4CAA8A7809DDD5A /* Project object */;
+}

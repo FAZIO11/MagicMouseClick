@@ -24,8 +24,10 @@ targets:
     sources:
       - path: Sources
         type: group
+        buildPhase: sources
       - path: MultitouchSupport.h
         type: file
+        buildPhase: sources
     resources:
       - path: Resources
         type: group
@@ -36,6 +38,12 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.fazil.MagicMouseClick
         LD_RUNPATH_SEARCH_PATHS:
           - "@executable_path/../Frameworks"
-        SWIFT_OBJC_BRIDGING_HEADER: MultitouchSupport.h
-    entitlements:
-      path: MagicMouseClick.entitlements
+        SWIFT_OBJC_BRIDGING_HEADER: "$(SRCROOT)/MultitouchSupport.h"
+        OTHER_LDFLAGS:
+          - "-framework"
+          - "IOKit"
+          - "-framework"
+          - "CoreGraphics"
+          - "-framework"
+          - "ApplicationServices"
+          - "-ld_classic"
