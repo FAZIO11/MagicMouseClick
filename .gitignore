@@ -1,0 +1,36 @@
+# Xcode
+.DS_Store
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Build products
+build/
+*.app
+*.appex
+*.framework
+*.dylib
+*.a
+Products/
+
+# Swift Package Manager
+.Packages/
+*.xcodeproj.project.xcworkspace/xcuserdata/
+
+# IDE
+.vscode/
+*.swp
+*.swo
