@@ -5,13 +5,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var isFirstLaunch = true
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        print("[MagicMouseClick] App launching...")
         menuBarController = MenuBarController()
         
         setupNotifications()
         
-        if PermissionChecker.shared.hasAccessibilityPermission {
-            MultitouchBridge.shared.start()
-        } else if isFirstLaunch {
+        print("[MagicMouseClick] Accessibility: \(PermissionChecker.shared.hasAccessibilityPermission)")
+        
+        startGestures()
+        
+        if !PermissionChecker.shared.hasAccessibilityPermission && isFirstLaunch {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 SetupWindowController.shared.showSetup()
             }
@@ -20,6 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationWillTerminate(_ notification: Notification) {
+        print("[MagicMouseClick] App terminating, stopping bridge")
         MultitouchBridge.shared.stop()
     }
     
@@ -29,11 +33,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil,
             queue: .main
         ) { [weak self] _ in
+            print("[MagicMouseClick] Gestures toggled: \(SettingsManager.shared.gesturesEnabled)")
             if SettingsManager.shared.gesturesEnabled {
-                MultitouchBridge.shared.start()
+                self?.startGestures()
             } else {
                 MultitouchBridge.shared.stop()
             }
         }
+        
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            print("[MagicMouseClick] App became active")
+            if SettingsManager.shared.gesturesEnabled && PermissionChecker.shared.hasAccessibilityPermission {
+                self?.startGestures()
+            }
+        }
+    }
+    
+    private func startGestures() {
+        print("[MagicMouseClick] Starting gestures...")
+        MultitouchBridge.shared.start()
     }
 }

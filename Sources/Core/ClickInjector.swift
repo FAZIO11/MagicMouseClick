@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import CoreGraphics
 
 final class ClickInjector {
     static let shared = ClickInjector()
@@ -22,6 +23,7 @@ final class ClickInjector {
         let now = CACurrentMediaTime()
         
         if let lastTime = lastClickTimes[button], now - lastTime < debounceInterval {
+            print("[ClickInjector] Debounced \(button == .left ? "LEFT" : "RIGHT") click")
             return
         }
         
@@ -29,22 +31,32 @@ final class ClickInjector {
         
         let position = clickPositions[button] ?? getCurrentCursorPosition()
         
-        let mouseDown = CGEvent(
-            mouseEventSource: nil,
+        print("[ClickInjector] Injecting \(button == .left ? "LEFT" : "RIGHT") click at \(position)")
+        
+        guard let mouseDown = CGEvent(
+            mouseEventSource: CGEventSource(stateID: .hidSystemState),
             mouseType: button == .left ? .leftMouseDown : .rightMouseDown,
             mouseCursorPosition: position,
             mouseButton: button
-        )
+        ) else {
+            print("[ClickInjector] Failed to create mouseDown event")
+            return
+        }
         
-        let mouseUp = CGEvent(
-            mouseEventSource: nil,
+        guard let mouseUp = CGEvent(
+            mouseEventSource: CGEventSource(stateID: .hidSystemState),
             mouseType: button == .left ? .leftMouseUp : .rightMouseUp,
             mouseCursorPosition: position,
             mouseButton: button
-        )
+        ) else {
+            print("[ClickInjector] Failed to create mouseUp event")
+            return
+        }
         
-        mouseDown?.post(tap: .cghidEventTap)
-        mouseUp?.post(tap: .cghidEventTap)
+        mouseDown.post(tap: .cghidEventTap)
+        mouseUp.post(tap: .cghidEventTap)
+        
+        print("[ClickInjector] Click posted successfully")
     }
     
     func updateClickPosition(_ position: CGPoint) {

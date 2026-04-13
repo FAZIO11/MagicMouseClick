@@ -8,102 +8,115 @@ protocol GestureRecognizerDelegate: AnyObject {
 final class GestureRecognizer {
     weak var delegate: GestureRecognizerDelegate?
     
-    private var sessions: [Int: GestureSession] = [:]
-    
+    private var activeSessions: [Int: SessionData] = [:]
+    private var sessionTimer: Timer?
+    private let tapTimeout: TimeInterval = 0.3
     private var lastInjectedClickTime: TimeInterval = 0
     private let clickDebounceInterval: TimeInterval = 0.15
     
+    private var lastTouchCount = 0
+    
     func processTouches(_ touches: [TouchData]) {
+        print("[GestureRecognizer] Processing \(touches.count) touches")
+        
         for touch in touches {
-            switch touch.state {
-            case MTTouchStateMakeTouch:
-                startSession(for: touch)
-            case MTTouchStateTouching:
-                updateSession(for: touch)
-            case MTTouchStateBreakTouch:
-                endSession(for: touch)
-            default:
-                break
-            }
+            print("[GestureRecognizer]   fingerID: \(touch.fingerID), state: \(touch.state), pos: (\(touch.position.x), \(touch.position.y))")
         }
-    }
-    
-    private func startSession(for touch: TouchData) {
         
-        let session = GestureSession(
-            fingerID: Int(touch.fingerID),
-            fingerCount: activeSessionCount() + 1,
-            startTimestamp: touch.timestamp,
-            startPosition: touch.position
-        )
-        sessions[Int(touch.fingerID)] = session
-    }
-    
-    private func updateSession(for touch: TouchData) {
-        guard var session = sessions[Int(touch.fingerID)] else { return }
-        session.positions.append(touch.position)
-        sessions[Int(touch.fingerID)] = session
-    }
-    
-    private func endSession(for touch: TouchData) {
-        guard var session = sessions[Int(touch.fingerID)] else { return }
-        session.endTimestamp = touch.timestamp
-        session.endPosition = touch.position
+        if touches.isEmpty && lastTouchCount > 0 {
+            print("[GestureRecognizer] Touch END detected - checking for tap")
+            completePendingSession()
+        }
         
-        let allSessions = sessions.values.filter { $0.fingerCount == session.fingerCount }
-        let allEnded = allSessions.allSatisfy { $0.endTimestamp != nil }
+        lastTouchCount = touches.count
         
-        if allEnded {
-            let totalFingers = allSessions.count
-            let avgPosition = calculateAveragePosition(from: allSessions)
-            
-            if shouldRecognizeAsTap(sessions: Array(allSessions)) {
-                injectClick(fingerCount: totalFingers, at: avgPosition)
+        for touch in touches {
+            if touch.state == MTTouchStateMakeTouch {
+                print("[GestureRecognizer] *** STATE=3 (MakeTouch) for finger \(touch.fingerID) ***")
+            } else if touch.state == MTTouchStateTouching {
+                print("[GestureRecognizer] *** STATE=4 (Touching) for finger \(touch.fingerID) ***")
+            } else if touch.state == MTTouchStateBreakTouch {
+                print("[GestureRecognizer] *** STATE=5 (BreakTouch) for finger \(touch.fingerID) ***")
             }
             
-            sessions = sessions.filter { $0.value.endTimestamp == nil }
-        }
-    }
-    
-    private func activeSessionCount() -> Int {
-        sessions.values.filter { $0.endTimestamp == nil }.count
-    }
-    
-    private func calculateAveragePosition(from sessions: [GestureSession]) -> CGPoint {
-        let positions = sessions.compactMap { $0.positions.first }
-        guard !positions.isEmpty else { return .zero }
-        
-        let avgX = positions.reduce(0) { $0 + $1.x } / CGFloat(positions.count)
-        let avgY = positions.reduce(0) { $0 + $1.y } / CGFloat(positions.count)
-        
-        return CGPoint(x: avgX, y: avgY)
-    }
-    
-    private func shouldRecognizeAsTap(sessions: [GestureSession]) -> Bool {
-        guard let firstSession = sessions.first else { return false }
-        
-        let duration = (firstSession.endTimestamp ?? firstSession.startTimestamp) - firstSession.startTimestamp
-        guard duration < SettingsManager.shared.tapDuration else { return false }
-        
-        for session in sessions {
-            let movement = session.totalMovement
-            if movement > CGFloat(SettingsManager.shared.movementThreshold) {
-                return false
+            if touch.state == MTTouchStateMakeTouch || touch.state == MTTouchStateTouching {
+                startOrUpdateSession(touch)
             }
         }
+    }
+    
+    private func startOrUpdateSession(_ touch: TouchData) {
+        let fingerID = Int(touch.fingerID)
         
-        return true
+        if activeSessions[fingerID] == nil {
+            print("[GestureRecognizer] Starting session for finger \(fingerID)")
+            activeSessions[fingerID] = SessionData(
+                fingerID: fingerID,
+                startTime: CACurrentMediaTime(),
+                startPosition: touch.position,
+                lastPosition: touch.position
+            )
+            resetSessionTimer()
+        } else {
+            activeSessions[fingerID]?.lastPosition = touch.position
+        }
+    }
+    
+    private func resetSessionTimer() {
+        sessionTimer?.invalidate()
+        sessionTimer = Timer.scheduledTimer(withTimeInterval: tapTimeout, repeats: false) { [weak self] _ in
+            self?.completePendingSession()
+        }
+    }
+    
+    private func completePendingSession() {
+        sessionTimer?.invalidate()
+        sessionTimer = nil
+        
+        guard !activeSessions.isEmpty else {
+            print("[GestureRecognizer] No active sessions to complete")
+            return
+        }
+        
+        let fingerCount = activeSessions.count
+        var avgPosition = CGPoint.zero
+        
+        for (_, session) in activeSessions {
+            avgPosition.x += session.startPosition.x
+            avgPosition.y += session.startPosition.y
+        }
+        avgPosition.x /= CGFloat(fingerCount)
+        avgPosition.y /= CGFloat(fingerCount)
+        
+        let duration = CACurrentMediaTime() - (activeSessions.values.first?.startTime ?? 0)
+        
+        print("[GestureRecognizer] Session complete: \(fingerCount) fingers, duration: \(duration)s")
+        
+        if duration < tapTimeout {
+            print("[GestureRecognizer] TAP DETECTED! \(fingerCount) fingers")
+            injectClick(fingerCount: fingerCount, at: avgPosition)
+        } else {
+            print("[GestureRecognizer] Too long - not a tap (duration: \(duration)s)")
+        }
+        
+        activeSessions.removeAll()
     }
     
     private func injectClick(fingerCount: Int, at position: CGPoint) {
         let now = CACurrentMediaTime()
-        guard now - lastInjectedClickTime > clickDebounceInterval else { return }
+        
+        if now - lastInjectedClickTime < clickDebounceInterval {
+            print("[GestureRecognizer] Click debounced")
+            return
+        }
         
         lastInjectedClickTime = now
         
+        print("[GestureRecognizer] INJECTING CLICK: \(fingerCount == 1 ? "LEFT" : "RIGHT")")
+        
         if fingerCount == 1 {
             ClickInjector.shared.injectLeftClick()
-        } else if fingerCount == 2 {
+        } else if fingerCount >= 2 {
             ClickInjector.shared.injectRightClick()
         }
         
@@ -111,44 +124,16 @@ final class GestureRecognizer {
     }
     
     func reset() {
-        sessions.removeAll()
+        activeSessions.removeAll()
+        sessionTimer?.invalidate()
+        sessionTimer = nil
+        lastTouchCount = 0
     }
 }
 
-struct GestureSession {
+private struct SessionData {
     let fingerID: Int
-    let fingerCount: Int
-    let startTimestamp: TimeInterval
+    let startTime: TimeInterval
     let startPosition: CGPoint
-    var positions: [CGPoint] = []
-    var endTimestamp: TimeInterval?
-    var endPosition: CGPoint?
-    
-    var duration: TimeInterval {
-        (endTimestamp ?? startTimestamp) - startTimestamp
-    }
-    
-    var totalMovement: CGFloat {
-        var total: CGFloat = 0
-        var previous = startPosition
-        
-        for position in positions {
-            total += distance(from: previous, to: position)
-            previous = position
-        }
-        
-        if let end = endPosition {
-            total += distance(from: previous, to: end)
-        }
-        
-        return total
-    }
-    
-    private func distance(from: CGPoint, to: CGPoint) -> CGFloat {
-        let dx = to.x - from.x
-        let dy = to.y - from.y
-        return sqrt(dx * dx + dy * dy)
-    }
+    var lastPosition: CGPoint
 }
-
-
