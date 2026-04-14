@@ -142,10 +142,17 @@ final class GestureRecognizer {
     private func injectClick(fingerCount: Int, at position: CGPoint) {
         print("[GestureRecognizer] INJECTING CLICK: \(fingerCount == 1 ? "LEFT" : "RIGHT")")
         
+        guard SettingsManager.shared.gesturesEnabled else {
+            print("[GestureRecognizer] Gestures disabled - skipping")
+            return
+        }
+
         if fingerCount == 1 {
             ClickInjector.shared.injectLeftClick()
         } else if fingerCount >= 2 {
-            ClickInjector.shared.injectRightClick()
+            if SettingsManager.shared.rightClickEnabled {
+                ClickInjector.shared.injectRightClick()
+            }
         }
         
         delegate?.gestureRecognizer(self, didRecognizeTap: fingerCount, at: position)

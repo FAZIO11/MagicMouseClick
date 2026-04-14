@@ -11,11 +11,17 @@ final class SettingsManager {
         static let movementThreshold = "movementThreshold"
         static let showVisualizer = "showVisualizer"
         static let launchAtLogin = "launchAtLogin"
+        static let rightClickEnabled = "rightClickEnabled"
     }
     
     var gesturesEnabled: Bool {
         get { defaults.object(forKey: Keys.gesturesEnabled) as? Bool ?? true }
         set { defaults.set(newValue, forKey: Keys.gesturesEnabled) }
+    }
+    
+    var rightClickEnabled: Bool {
+        get { defaults.object(forKey: Keys.rightClickEnabled) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Keys.rightClickEnabled) }
     }
     
     var tapDuration: TimeInterval {

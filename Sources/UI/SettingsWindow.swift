@@ -27,6 +27,7 @@ struct SettingsView: View {
     @State private var tapDuration = SettingsManager.shared.tapDuration
     @State private var movementThreshold = SettingsManager.shared.movementThreshold
     @State private var launchAtLogin = SettingsManager.shared.launchAtLogin
+    @State private var rightClickEnabled = SettingsManager.shared.rightClickEnabled
     
     var body: some View {
         HSplitView {
@@ -39,6 +40,11 @@ struct SettingsView: View {
                 Toggle("Enable Tap-to-Click", isOn: $gesturesEnabled)
                     .onChange(of: gesturesEnabled) { newValue in
                         SettingsManager.shared.gesturesEnabled = newValue
+                    }
+                
+                Toggle("Enable Right Click (2-finger tap)", isOn: $rightClickEnabled)
+                    .onChange(of: rightClickEnabled) { newValue in
+                        SettingsManager.shared.rightClickEnabled = newValue
                     }
                 
                 Divider()
