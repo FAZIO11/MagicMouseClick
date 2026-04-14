@@ -5,9 +5,12 @@ import CoreGraphics
 final class ClickInjector {
     static let shared = ClickInjector()
     
-    private var lastClickTimes: [CGMouseButton: TimeInterval] = [:]
-    private let debounceInterval: TimeInterval = 0.1
     private var clickPositions: [CGMouseButton: CGPoint] = [:]
+    
+    private var lastClickTime: TimeInterval = 0
+    private var lastClickPosition: CGPoint = .zero
+    private let doubleClickTime: TimeInterval = 0.5
+    private let doubleClickDistance: CGFloat = 20.0
     
     private init() {}
     
@@ -20,22 +23,19 @@ final class ClickInjector {
     }
     
     private func injectClick(button: CGMouseButton) {
-        let now = CACurrentMediaTime()
-        
-        if let lastTime = lastClickTimes[button], now - lastTime < debounceInterval {
-            print("[ClickInjector] Debounced \(button == .left ? "LEFT" : "RIGHT") click")
-            return
-        }
-        
-        lastClickTimes[button] = now
-        
         let position = clickPositions[button] ?? getCurrentCursorPosition()
         
-        print("[ClickInjector] Injecting \(button == .left ? "LEFT" : "RIGHT") click at \(position)")
+        let isDoubleClick = checkDoubleClick(at: position)
+        let clickState: Int = isDoubleClick ? 2 : 1
+        
+        print("[ClickInjector] Injecting \(button == .left ? "LEFT" : "RIGHT") click at \(position), clickState: \(clickState)")
+        
+        let mouseTypeDown = button == .left ? CGEventType.leftMouseDown : CGEventType.rightMouseDown
+        let mouseTypeUp = button == .left ? CGEventType.leftMouseUp : CGEventType.rightMouseUp
         
         guard let mouseDown = CGEvent(
             mouseEventSource: CGEventSource(stateID: .hidSystemState),
-            mouseType: button == .left ? .leftMouseDown : .rightMouseDown,
+            mouseType: mouseTypeDown,
             mouseCursorPosition: position,
             mouseButton: button
         ) else {
@@ -43,9 +43,11 @@ final class ClickInjector {
             return
         }
         
+        mouseDown.setIntegerValueField(.mouseEventClickState, value: Int64(clickState))
+        
         guard let mouseUp = CGEvent(
             mouseEventSource: CGEventSource(stateID: .hidSystemState),
-            mouseType: button == .left ? .leftMouseUp : .rightMouseUp,
+            mouseType: mouseTypeUp,
             mouseCursorPosition: position,
             mouseButton: button
         ) else {
@@ -53,10 +55,30 @@ final class ClickInjector {
             return
         }
         
-        mouseDown.post(tap: .cghidEventTap)
-        mouseUp.post(tap: .cghidEventTap)
+        mouseUp.setIntegerValueField(.mouseEventClickState, value: Int64(clickState))
+        
+        mouseDown.post(tap: CGEventTapLocation(rawValue: 1)!)
+        mouseUp.post(tap: CGEventTapLocation(rawValue: 1)!)
+        
+        lastClickTime = CACurrentMediaTime()
+        lastClickPosition = position
         
         print("[ClickInjector] Click posted successfully")
+    }
+    
+    private func checkDoubleClick(at position: CGPoint) -> Bool {
+        let now = CACurrentMediaTime()
+        let timeSinceLastClick = now - lastClickTime
+        
+        let dx = position.x - lastClickPosition.x
+        let dy = position.y - lastClickPosition.y
+        let distance = sqrt(dx * dx + dy * dy)
+        
+        let isDoubleClick = timeSinceLastClick < doubleClickTime && distance < doubleClickDistance
+        
+        print("[ClickInjector] Double-click check: time=\(String(format: "%.3f", timeSinceLastClick))s, dist=\(String(format: "%.1f", distance)), isDouble=\(isDoubleClick)")
+        
+        return isDoubleClick
     }
     
     func updateClickPosition(_ position: CGPoint) {
@@ -72,7 +94,8 @@ final class ClickInjector {
     }
     
     func reset() {
-        lastClickTimes.removeAll()
         clickPositions.removeAll()
+        lastClickTime = 0
+        lastClickPosition = .zero
     }
 }
