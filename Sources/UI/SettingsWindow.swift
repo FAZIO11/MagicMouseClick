@@ -28,6 +28,7 @@ struct SettingsView: View {
     @State private var movementThreshold = SettingsManager.shared.movementThreshold
     @State private var launchAtLogin = SettingsManager.shared.launchAtLogin
     @State private var rightClickEnabled = SettingsManager.shared.rightClickEnabled
+    @State private var advancedExpanded = false
     
     var body: some View {
         HSplitView {
@@ -49,50 +50,55 @@ struct SettingsView: View {
                 
                 Divider()
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Tap Duration")
-                        .font(.headline)
-                    Text("How long a touch must last to register as a tap")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    
-                    HStack {
-                        Slider(value: $tapDuration, in: 0.1...0.35, step: 0.01)
-                            .frame(width: 200)
-                            .onChange(of: tapDuration) { newValue in
-                                SettingsManager.shared.tapDuration = newValue
-                            }
-                        Text("\(Int(tapDuration * 1000))ms")
-                            .font(.system(.body, design: .monospaced))
-                            .frame(width: 50)
-                    }
-                }
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Movement Threshold")
-                        .font(.headline)
-                    Text("Maximum finger movement during a tap")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    
-                    HStack {
-                        Slider(value: $movementThreshold, in: 0.01...0.1, step: 0.005)
-                            .frame(width: 200)
-                            .onChange(of: movementThreshold) { newValue in
-                                SettingsManager.shared.movementThreshold = newValue
-                            }
-                        Text(String(format: "%.2f", movementThreshold))
-                            .font(.system(.body, design: .monospaced))
-                            .frame(width: 50)
-                    }
-                }
-                
-                Divider()
-                
                 Toggle("Launch at Login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { newValue in
                         SettingsManager.shared.launchAtLogin = newValue
                     }
+                
+                Divider()
+                
+                DisclosureGroup("Advanced", isExpanded: $advancedExpanded) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Tap Duration")
+                                .font(.headline)
+                            Text("How long a touch must last to register as a tap")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            
+                            HStack {
+                                Slider(value: $tapDuration, in: 0.1...0.35, step: 0.01)
+                                    .frame(width: 200)
+                                    .onChange(of: tapDuration) { newValue in
+                                        SettingsManager.shared.tapDuration = newValue
+                                    }
+                                Text("\(Int(tapDuration * 1000))ms")
+                                    .font(.system(.body, design: .monospaced))
+                                    .frame(width: 50)
+                            }
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Movement Threshold")
+                                .font(.headline)
+                            Text("Maximum finger movement during a tap")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            
+                            HStack {
+                                Slider(value: $movementThreshold, in: 0.01...0.1, step: 0.005)
+                                    .frame(width: 200)
+                                    .onChange(of: movementThreshold) { newValue in
+                                        SettingsManager.shared.movementThreshold = newValue
+                                    }
+                                Text(String(format: "%.2f", movementThreshold))
+                                    .font(.system(.body, design: .monospaced))
+                                    .frame(width: 50)
+                            }
+                        }
+                    }
+                    .padding(.top, 8)
+                }
                 
                 Spacer()
                 

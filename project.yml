@@ -25,14 +25,16 @@ targets:
       - path: Sources
         type: group
         buildPhase: sources
-    resources:
-      - path: Resources
-        type: group
+      - path: Resources/Assets.xcassets
+        type: file
+        buildPhase: resources
     settings:
       base:
         INFOPLIST_FILE: Info.plist
         CODE_SIGN_ENTITLEMENTS: MagicMouseClick.entitlements
         PRODUCT_BUNDLE_IDENTIFIER: com.fazil.MagicMouseClick
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: NO
         LD_RUNPATH_SEARCH_PATHS:
           - "@executable_path/../Frameworks"
         OTHER_LDFLAGS:
