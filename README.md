@@ -1,11 +1,8 @@
-# <img width="555" height="137" alt="Screenshot 2026-04-16 at 10 44 47 PM" src="https://github.com/user-attachments/assets/87963f2d-a648-43e4-9910-93dc07b0d635" />
-
-Add tap-to-click to your Magic Mouse — free and open source.
 
 <p align="center">
-  <img src="Resources/Assets.xcassets/AppIcon.appiconset/512.png" 
-       width="128" height="128" alt="MagicMouseClick icon">
+  # <img src="https://github.com/user-attachments/assets/87963f2d-a648-43e4-9910-93dc07b0d635" />
 </p>
+Add tap-to-click to your Magic Mouse — free and open source.
 
 [![Download](https://img.shields.io/github/v/release/FAZIO11/MagicMouseClick?label=Download)](https://github.com/FAZIO11/MagicMouseClick/releases/latest)
 [![Star on GitHub](https://img.shields.io/github/stars/FAZIO11/MagicMouseClick?style=social)](https://github.com/FAZIO11/MagicMouseClick)
