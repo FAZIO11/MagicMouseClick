@@ -5,6 +5,8 @@ Add tap-to-click to your Magic Mouse — free and open source.
 [![Download](https://img.shields.io/github/v/release/FAZIO11/MagicMouseClick?label=Download)](https://github.com/FAZIO11/MagicMouseClick/releases/latest)
 [![Star on GitHub](https://img.shields.io/github/stars/FAZIO11/MagicMouseClick?style=social)](https://github.com/FAZIO11/MagicMouseClick)
 
+
+https://github.com/FAZIO11/MagicMouseClick/assets/YOUR_ASSET_ID/video.mp4
 ## Demo
 
 [![Watch Setup Video](https://img.youtube.com/vi/91Kkd39EIIo/0.jp)](https://www.youtube.com/watch?v=91Kkd39EIIo)
