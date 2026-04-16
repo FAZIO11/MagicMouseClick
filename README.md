@@ -1,3 +1,10 @@
+# MagicMouseClick
+
+Add tap-to-click to your Magic Mouse — free and open source.
+
+<p align="center">
+<img width="564" height="148" alt="Screenshot 2026-04-16 at 10 51 39 PM" src="https://github.com/user-attachments/assets/20218956-858d-49e3-aa9e-6ec483f0c109" />
+<p align="center">
 
 <p align="center">
   # <img src="https://github.com/user-attachments/assets/87963f2d-a648-43e4-9910-93dc07b0d635" />
