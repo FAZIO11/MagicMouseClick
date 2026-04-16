@@ -3,14 +3,22 @@
 Add tap-to-click to your Magic Mouse — free and open source.
 
 [![Download](https://img.shields.io/github/v/release/FAZIO11/MagicMouseClick?label=Download)](https://github.com/FAZIO11/MagicMouseClick/releases/latest)
+[![Star on GitHub](https://img.shields.io/github/stars/FAZIO11/MagicMouseClick?style=social)](https://github.com/FAZIO11/MagicMouseClick)
+
+## Demo
+
+[![Watch Setup Video](https://img.youtube.com/vi/91Kkd39EIIo/0.jp)](https://www.youtube.com/watch?v=91Kkd39EIIo)
 
 ## Installation
 
 1. Download **MagicMouseClick-v1.1.dmg** from the [latest release](https://github.com/FAZIO11/MagicMouseClick/releases/latest)
 2. Open the DMG → drag **MagicMouseClick** to Applications
-3. Right-click the app → Open → click **Open Anyway** (macOS security warning — safe to bypass)
-4. Grant Accessibility permission when prompted
-5. Done — tap your Magic Mouse to click!
+3. Double-click the app — a security warning will appear, click **Done**
+4. Go to **System Settings → Privacy & Security**
+5. Scroll down and click **"Open Anyway"** next to MagicMouseClick
+6. Enter your Mac password
+7. Grant Accessibility permission when prompted
+8. Done — tap your Magic Mouse to click!
 
 ## Features
 
@@ -24,6 +32,12 @@ Add tap-to-click to your Magic Mouse — free and open source.
 
 - macOS 13.0 (Ventura) or later
 - Magic Mouse or Magic Mouse 2
+
+## Support the Project
+
+If MagicMouseClick is useful to you, please ⭐ star the repo — it helps others find it!
+
+
 
 ---
 
@@ -107,3 +121,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
+
+
